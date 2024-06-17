@@ -16,7 +16,8 @@ class Model:
             self.user_aquisition_counts.append(date[1])
         
         self.days = None
-        self.users_by_day = None
+        self.new_users_by_day = None
+        self.users_by_day = []
         self.user_count = None
 
         self.user_id = 0
@@ -51,33 +52,40 @@ class Model:
                 users[count] = y_0*np.e**(-k*(days[count] - day_0))
         users = np.round(users, decimals=0)
         total_users = np.sum(users)
+        
+        for count,user in enumerate(users):
+            self.users_by_day.append(np.sum(users[0:count]))
 
         if show:
-            plt.plot(days, users)
+            plt.plot(days, users, label='New users per day')
+            plt.plot(days, self.users_by_day, label='Total users per day')
             plt.title('User aquisiton curve, total users: ' + str(int(total_users)))
+            plt.legend(loc='best')
+            plt.xlabel('Days')
+            plt.ylabel('Users')
             plt.show()
         
         self.days = days
-        self.users_by_day = users
+        self.new_users_by_day = users
         self.user_count = total_users
-        return self.days, self.users_by_day, self.user_count
+        return self.days, self.new_users_by_day, self.users_by_day, self.user_count
 
     def sample_user_usage_distribution(self, size, show=False):
         # usage: Score determining how often a user uses the application 
-        shape, scale = 1, 0.1  #Average useage score: 0.1
-        useage = np.random.gamma(shape, scale, size)
+        shape, scale = 1, 0.1  #Average usage score: 0.1
+        usage = np.random.gamma(shape, scale, size)
 
         if show:
-            count, bins, ignored = plt.hist(useage, 50, density=True)
+            count, bins, ignored = plt.hist(usage, 50, density=True)
             y = bins**(shape-1)*(np.exp(-bins/scale) / (sps.gamma(shape)*scale**shape))
             plt.plot(bins, y, linewidth=2, color='r')  
-            plt.title('Useage distribution')
-            plt.xlabel('Useage score')
+            plt.title('Usage distribution')
+            plt.xlabel('Usage score')
             plt.show()
 
-        return useage
+        return usage
 
-    def sample_useage_thresh(self):
+    def sample_usage_thresh(self):
         mu, sigma = 0.5, 0.1  # Perfectly normal distribution
         res = np.random.normal(mu, sigma, 1)
         return res[0]
@@ -97,20 +105,20 @@ class Model:
 
         return indexing
     
-    def sample_user_storeage_distribution(self, size, show=False):      
-        # storeage: amount of media uploaded on a given day by a given user (in GB)
-        shape, scale = 3, 1  # Average data stored: 5 Gb per use
-        storeage = np.random.gamma(shape, scale, size)
+    def sample_user_storage_distribution(self, size, show=False):      
+        # storage: amount of media uploaded on a given day by a given user (in GB)
+        shape, scale = 3, 1  # Average data stored: 3 Gb per use
+        storage = np.random.gamma(shape, scale, size)
 
         if show:
-            count, bins, ignored = plt.hist(storeage, 50, density=True)
+            count, bins, ignored = plt.hist(storage, 50, density=True)
             y = bins**(shape-1)*(np.exp(-bins/scale) / (sps.gamma(shape)*scale**shape))
             plt.plot(bins, y, linewidth=2, color='r')  
-            plt.title('Storeage distribution')
+            plt.title('Storage distribution')
             plt.xlabel('Gb stored')
             plt.show()
 
-        return storeage
+        return storage
 
     def sample_user_search_distribution(self, size, show=False):
         # searching: number of searches made on a given day by a given user
@@ -131,24 +139,24 @@ class Model:
         self.user_id += 1        
         usage_score = self.sample_user_usage_distribution(1)[0]
         min_indexed = self.sample_user_index_distribution(1)[0]
-        mb_uploaded = self.sample_user_storeage_distribution(1)[0]
+        mb_uploaded = self.sample_user_storage_distribution(1)[0]
         searches_made = self.sample_user_search_distribution(1)[0]
         user = np.array([user_id, usage_score, min_indexed, mb_uploaded, searches_made])
         self.user_data = np.vstack((self.user_data, user))  # Add user ID to array
         self.user_ids.append(user_id)  # Append user ID Links
 
     def predict_usage(self):
-        step_useage_thresh = self.sample_useage_thresh()
+        step_usage_thresh = self.sample_usage_thresh()
         for user_id in self.user_ids:
-            if self.user_data[user_id, 1] >= step_useage_thresh:
+            if self.user_data[user_id, 1] >= step_usage_thresh:
                 self.user_data[user_id, 2] += self.sample_user_index_distribution(1)[0]
-                self.user_data[user_id, 3] += self.sample_user_storeage_distribution(1)[0]
+                self.user_data[user_id, 3] += self.sample_user_storage_distribution(1)[0]
                 self.user_data[user_id, 4] += self.sample_user_search_distribution(1)[0]
 
-    def calculate_useage(self, show=True):
+    def calculate_usage(self, show=True):
         self.user_data = np.empty((0, 5))
         for count, day in enumerate(self.days):
-            new_users = self.users_by_day[count]
+            new_users = self.new_users_by_day[count]
             for user in range(int(new_users)):
                 self.create_user()
             self.predict_usage()
@@ -158,7 +166,7 @@ class Model:
 
         if show:
             plt.plot(self.days, self.indexed_by_day, label='indexing use')
-            plt.plot(self.days, self.stored_by_day, label='storeage use')
+            plt.plot(self.days, self.stored_by_day, label='storage use')
             plt.plot(self.days, self.searched_by_day, label='search use')
             plt.legend(loc='best')
             plt.title('Application use over time')
@@ -168,12 +176,12 @@ class Model:
 
     def calculate_cost_revenue_profit(self, show=True):
         # Vercel: neglibible
-        cost_per_min_indexed = 0.03 
+        cost_per_min_indexed = 0.04  #Includes captioning 
         cost_per_gb_uploaded = 0.023/30
         cost_per_search = 0.0017 
         base_cost_per_day = 15.6 
 
-        user_cost_per_min_indexed = 0.06  #TODO
+        user_cost_per_min_indexed = 0.03  #TODO
         user_cost_per_mb_stored = 0  #TODO
         user_cost_per_search = 0  #TODO
         
@@ -204,16 +212,17 @@ class Model:
             plt.plot(self.days, self.profit_by_day, label='profit')
             plt.legend(loc='best')
             plt.title('Total cost: '+str(int(total_cost))+', Total revenue: '+str(int(total_revenue))+', Total profit: '+str(int(total_profit)))
+            #plt.title('Total cost: '+str(int(total_cost)))
             plt.xlabel('Days')
-            plt.ylabel('')
+            plt.ylabel('Dollars')
             plt.show()
 
 
 if __name__ == '__main__':
     # Given: Start date, End Date [[Date, predicted signups], [], ...]
     start_date = (2024, 6, 17)  # not included in analysis
-    end_date = (2024, 7, 31)
-    user_aquisition_dates = [[(2024, 6, 21), 100], [(2024, 6, 25), 400]]
+    end_date = (2025, 1, 1)
+    user_aquisition_dates = [[(2024, 6, 21), 100], [(2024, 6, 25), 400], [(2024, 9, 1), 10000]]
 
     model = Model(
         start_date=start_date,
@@ -224,14 +233,14 @@ if __name__ == '__main__':
     # Create the user aquistion curve
     model.generate_user_aquisition_curve()
 
-    # View distributions for useage, indexing, storage, and searches
-    #model.sample_user_usage_distribution(1000, show=True)
-    #model.sample_user_index_distribution(1000, show=True)
-    #model.sample_user_storeage_distribution(1000, show=True)
-    #model.sample_user_search_distribution(1000, show=True)
+    # View distributions for usage, indexing, storage, and searches
+    model.sample_user_usage_distribution(1000, show=True)
+    model.sample_user_index_distribution(1000, show=True)
+    model.sample_user_storage_distribution(1000, show=True)
+    model.sample_user_search_distribution(1000, show=True)
 
-    # Create a plot of useage over time for indexing, storage, and searching
-    model.calculate_useage()
+    # Create a plot of usage over time for indexing, storage, and searching
+    model.calculate_usage()
 
     # Create a plot of cost, revenue, and profit over time
     model.calculate_cost_revenue_profit()
