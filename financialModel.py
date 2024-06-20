@@ -223,20 +223,11 @@ class Model:
     def pie_chart_to_date(self, show=True):
         pass
     
-    def pie_chart_3_mil(self, show=True):
-        labels = 'Operations', 'Research', 'Talent', 'Misc'
-        sizes = [1250000, 1000000, 500000, 250000]
-        
-        if show:
-            plt.pie(sizes, labels=labels)
-            plt.show()
-
-
 if __name__ == '__main__':
     # Given: Start date, End Date [[Date, predicted signups], [], ...]
     start_date = (2024, 6, 17)  # not included in analysis
     end_date = (2025, 6, 1)
-    user_aquisition_dates = [[(2024, 6, 18), 100], [(2024, 7, 12), 1000], [(2024, 8, 15), 1400], [(2024, 9, 15), 2000]]
+    user_aquisition_dates = [[(2024, 6, 18), 100], [(2024, 7, 12), 1000], [(2024, 8, 15), 1500], [(2024, 9, 15), 2000]]
 
     model = Model(
         start_date=start_date,
@@ -258,8 +249,5 @@ if __name__ == '__main__':
 
     # Create a plot of cost, revenue, and profit over time
     model.calculate_cost_revenue_profit()
-
-    # Pie chart of a 3 mil investment
-    model.pie_chart_3_mil()
 
 
