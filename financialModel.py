@@ -59,7 +59,7 @@ class Model:
         if show:
             plt.plot(days, users, label='New users per day')
             plt.plot(days, self.users_by_day, label='Total users per day')
-            plt.title('User aquisiton curve, total users: ' + str(int(total_users)))
+            plt.title('User aquisiton, total users: ' + str(int(total_users)))
             plt.legend(loc='best')
             plt.xlabel('Days')
             plt.ylabel('Users')
@@ -208,21 +208,35 @@ class Model:
 
         if show:
             plt.plot(self.days, self.cost_by_day, label='cost')
-            plt.plot(self.days, self.revenue_by_day, label='revenue')
-            plt.plot(self.days, self.profit_by_day, label='profit')
+            #plt.plot(self.days, self.revenue_by_day, label='revenue')
+            #plt.plot(self.days, self.profit_by_day, label='profit')
             plt.legend(loc='best')
-            plt.title('Total cost: '+str(int(total_cost))+', Total revenue: '+str(int(total_revenue))+', Total profit: '+str(int(total_profit)))
-            #plt.title('Total cost: '+str(int(total_cost)))
+            #plt.title('Total cost: '+str(int(total_cost))+', Total revenue: '+str(int(total_revenue))+', Total profit: '+str(int(total_profit)))
+            plt.title('Total cost: '+str(int(total_cost)))
             plt.xlabel('Days')
             plt.ylabel('Dollars')
+            plt.show()
+
+    def pie_chart_total_time(self, show=True):
+        pass
+
+    def pie_chart_to_date(self, show=True):
+        pass
+    
+    def pie_chart_3_mil(self, show=True):
+        labels = 'Operations', 'Research', 'Talent', 'Misc'
+        sizes = [1250000, 1000000, 500000, 250000]
+        
+        if show:
+            plt.pie(sizes, labels=labels)
             plt.show()
 
 
 if __name__ == '__main__':
     # Given: Start date, End Date [[Date, predicted signups], [], ...]
     start_date = (2024, 6, 17)  # not included in analysis
-    end_date = (2025, 1, 1)
-    user_aquisition_dates = [[(2024, 6, 21), 100], [(2024, 6, 25), 400], [(2024, 9, 1), 10000]]
+    end_date = (2025, 6, 1)
+    user_aquisition_dates = [[(2024, 6, 18), 100], [(2024, 7, 12), 1000], [(2024, 8, 15), 1400], [(2024, 9, 15), 2000]]
 
     model = Model(
         start_date=start_date,
@@ -234,10 +248,10 @@ if __name__ == '__main__':
     model.generate_user_aquisition_curve()
 
     # View distributions for usage, indexing, storage, and searches
-    model.sample_user_usage_distribution(1000, show=True)
-    model.sample_user_index_distribution(1000, show=True)
-    model.sample_user_storage_distribution(1000, show=True)
-    model.sample_user_search_distribution(1000, show=True)
+    #model.sample_user_usage_distribution(1000, show=True)
+    #model.sample_user_index_distribution(1000, show=True)
+    #model.sample_user_storage_distribution(1000, show=True)
+    #model.sample_user_search_distribution(1000, show=True)
 
     # Create a plot of usage over time for indexing, storage, and searching
     model.calculate_usage()
@@ -245,5 +259,7 @@ if __name__ == '__main__':
     # Create a plot of cost, revenue, and profit over time
     model.calculate_cost_revenue_profit()
 
+    # Pie chart of a 3 mil investment
+    model.pie_chart_3_mil()
 
 
