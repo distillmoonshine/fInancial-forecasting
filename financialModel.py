@@ -28,9 +28,24 @@ class Model:
         self.stored_by_day = []
         self.searched_by_day = []
 
+        self.ops_cost_by_day = []
+        self.ops_cost = 0
+
+        self.r_and_d_cost_by_day = []
+        self.r_and_d_cost = 0
+
+        self.talent_cost_by_day = []
+        self.talent_cost = 0
+        
         self.cost_by_day = []
+        self.total_cost = 0
+
         self.revenue_by_day = []
+        self.total_revenue = 0
+
         self.profit_by_day = []
+        self.total_profit = 0
+
 
     def generate_user_aquisition_curve(self, show=True):
         delta = self.end_date - self.start_date  
@@ -144,6 +159,7 @@ class Model:
         user = np.array([user_id, usage_score, min_indexed, mb_uploaded, searches_made])
         self.user_data = np.vstack((self.user_data, user))  # Add user ID to array
         self.user_ids.append(user_id)  # Append user ID Links
+        return user
 
     def predict_usage(self):
         step_usage_thresh = self.sample_usage_thresh()
@@ -170,20 +186,17 @@ class Model:
             plt.plot(self.days, self.searched_by_day, label='search use')
             plt.legend(loc='best')
             plt.title('Application use over time')
+            plt.xlabel('Days')
             plt.show()
 
         return self.days, self.indexed_by_day, self.stored_by_day, self.searched_by_day
 
-    def calculate_cost_revenue_profit(self, show=True):
+    def calculate_ops_cost(self, show=True):
         # Vercel: neglibible
         cost_per_min_indexed = 0.04  #Includes captioning 
         cost_per_gb_uploaded = 0.023/30
         cost_per_search = 0.0017 
         base_cost_per_day = 15.6 
-
-        user_cost_per_min_indexed = 0.03  #TODO
-        user_cost_per_mb_stored = 0  #TODO
-        user_cost_per_search = 0  #TODO
         
         for count, day in enumerate(self.days):
             cost = 0
@@ -191,8 +204,99 @@ class Model:
             cost += self.stored_by_day[count]*cost_per_gb_uploaded
             cost += self.searched_by_day[count]*cost_per_search
             cost += base_cost_per_day
+            self.ops_cost_by_day.append(cost)
+        total_cost = sum(self.ops_cost_by_day)
+
+        cost_over_time = [self.ops_cost_by_day[0]]
+        for count in range(len(self.ops_cost_by_day)-1):
+            cost_over_time.append(cost_over_time[count-1] + cost_over_time[count])
+
+        if show:
+            plt.plot(self.days, self.ops_cost_by_day, label='Daily cost')
+            plt.plot(self.days, cost_over_time, label='Cost over time')
+            plt.legend(loc='best')
+            plt.title('Operations cost: '+ str(int(total_cost)))
+            plt.xlabel('Days')
+            plt.ylabel('Dollars')
+            plt.show()
+        
+        self.ops_cost = total_cost
+        return self.ops_cost, self.ops_cost_by_day
+
+    def calculate_r_and_d_cost(self, show=True):
+        init_cost = 1784.93
+        k = 1/57 #TODO
+        total_cost = []
+        cost_by_day = [init_cost]
+        for count, day in enumerate(self.days):
+            total_cost.append(init_cost*np.e**(k*count))
+        for count in range(len(total_cost)-1):
+            cost_by_day.append(total_cost[count+1] - total_cost[count])
+        self.r_and_d_cost_by_day = cost_by_day
+        self.r_and_d_cost = total_cost[-1]
+
+        if show:
+            plt.plot(self.days, cost_by_day, label='Daily cost')
+            plt.plot(self.days, total_cost, label='Cost over time')
+            plt.title('R&D cost, total: ' + str(int(self.r_and_d_cost)))
+            plt.xlabel('Days')
+            plt.ylabel('Dollars')
+            plt.legend(loc='best')
+            plt.show()
+
+        return self.r_and_d_cost, self.r_and_d_cost_by_day
+
+    def calculate_talent_cost(self, show=True):
+        # Annual salaries:
+        salaries = [75000, 75000, 100000, 150000, 100000] #TODO
+        
+        daily_salary = []
+        for salary in salaries:
+            daily_salary.append(salary/365)
+        daily_salary_sum = sum(daily_salary)
+        
+        salary_by_day = []
+        total_spend_salary_by_day = []
+        for day in self.days:
+            salary_by_day.append(daily_salary_sum)
+            total_spend_salary_by_day.append(daily_salary_sum*day)
+        self.talent_cost = total_spend_salary_by_day[-1]
+
+        if show:
+            plt.plot(self.days, salary_by_day, label='Daily cost')
+            plt.plot(self.days, total_spend_salary_by_day, label='Cost over time')
+            plt.title('Cost of talent, total cost: ' + str(int(self.talent_cost)))
+            plt.legend(loc='best')
+            plt.xlabel('Day')
+            plt.ylabel('Cost')
+            plt.show()
+
+        self.talent_cost_by_day = salary_by_day
+        return self.talent_cost, self.talent_cost_by_day
+    
+    def calculate_total_cost(self, show=True):
+        for count, day in enumerate(self.days):
+            cost = 0
+            cost += self.ops_cost_by_day[count]
+            cost += self.r_and_d_cost_by_day[count]
+            cost += self.talent_cost_by_day[count]
             self.cost_by_day.append(cost)
-        total_cost = sum(self.cost_by_day)
+        self.total_cost = sum(self.cost_by_day)
+
+        if show:
+            plt.plot(self.days, self.cost_by_day, label='Daily cost')
+            plt.title('Total cost: ' + str(int(self.total_cost)))
+            plt.xlabel('Days')
+            plt.ylabel('Dollars')
+            plt.legend(loc='best')
+            plt.show()
+
+        return self.total_cost, self.cost_by_day
+
+    def calculate_revenue_profit(self, show=True):
+        user_cost_per_min_indexed = 0.06  #TODO -> 10 hours for 36 dollars
+        user_cost_per_mb_stored = 0  #TODO
+        user_cost_per_search = 0  #TODO
 
         for count, day in enumerate(self.days):
             revenue = 0
@@ -207,27 +311,55 @@ class Model:
         total_profit = sum(self.profit_by_day)
 
         if show:
-            plt.plot(self.days, self.cost_by_day, label='cost')
-            #plt.plot(self.days, self.revenue_by_day, label='revenue')
-            #plt.plot(self.days, self.profit_by_day, label='profit')
+            plt.plot(self.days, self.revenue_by_day, label='Revenue by day')
+            plt.plot(self.days, self.profit_by_day, label='Profit by day')
             plt.legend(loc='best')
-            #plt.title('Total cost: '+str(int(total_cost))+', Total revenue: '+str(int(total_revenue))+', Total profit: '+str(int(total_profit)))
-            plt.title('Total cost: '+str(int(total_cost)))
+            plt.title('Total revenue: '+str(int(total_revenue))+', Total profit: '+str(int(total_profit)))
             plt.xlabel('Days')
             plt.ylabel('Dollars')
             plt.show()
+        
+        self.total_revenue = total_revenue
+        self.total_profit = total_profit
+        return self.total_revenue, self.total_profit
 
-    def pie_chart_total_time(self, show=True):
-        pass
+    def pie_chart_of_costs(self, show=True):
+        labels = 'Operations', 'Research', 'Talent'
+        costs = [self.ops_cost, self.r_and_d_cost, self.talent_cost]
 
-    def pie_chart_to_date(self, show=True):
-        pass
+        if show:
+            plt.pie(costs, labels=labels, autopct='%1.1f%%')
+            plt.title('Breakdown of costs, total: ' + str(int(sum(costs))))
+            plt.show()
+        
+        return sum(costs)
+
+    def pie_chart_total_budget(self, budget, show=True):
+        labels = 'Operations', 'Research', 'Talent', 'Misc'
+        costs = [self.ops_cost, self.r_and_d_cost, self.talent_cost]
+        total_spend = sum(costs)
+
+        misc_spend = budget - total_spend
+        costs.append(misc_spend)
+        
+        if show:
+            plt.pie(costs, labels=labels, autopct='%1.1f%%')
+            plt.title('Breakdown of coss, total: ' + str(int(sum(costs))))
+            plt.show()
+        
+        return sum(costs)
+
     
 if __name__ == '__main__':
     # Given: Start date, End Date [[Date, predicted signups], [], ...]
     start_date = (2024, 6, 17)  # not included in analysis
+    
     end_date = (2025, 6, 1)
     user_aquisition_dates = [[(2024, 6, 18), 100], [(2024, 7, 12), 1000], [(2024, 8, 15), 1500], [(2024, 9, 15), 2000]]
+    
+    #end_date = (2024, 7, 17)
+    #user_aquisition_dates = [[(2024, 6, 18), 2000]]
+
 
     model = Model(
         start_date=start_date,
@@ -239,15 +371,33 @@ if __name__ == '__main__':
     model.generate_user_aquisition_curve()
 
     # View distributions for usage, indexing, storage, and searches
-    #model.sample_user_usage_distribution(1000, show=True)
-    #model.sample_user_index_distribution(1000, show=True)
-    #model.sample_user_storage_distribution(1000, show=True)
-    #model.sample_user_search_distribution(1000, show=True)
+    model.sample_user_usage_distribution(1000, show=True)
+    model.sample_user_index_distribution(1000, show=True)
+    model.sample_user_storage_distribution(1000, show=True)
+    model.sample_user_search_distribution(1000, show=True)
 
     # Create a plot of usage over time for indexing, storage, and searching
     model.calculate_usage()
 
     # Create a plot of cost, revenue, and profit over time
-    model.calculate_cost_revenue_profit()
+    model.calculate_ops_cost()
+
+    # Create a plot of R and D costs (GPU up time and use) over time
+    model.calculate_r_and_d_cost()
+
+    # Create a plot of talent costs over time
+    model.calculate_talent_cost()
+
+    # Create a chart of total cost over time
+    model.calculate_total_cost()
+
+    # Create a plot of revenue and profit over time    
+    model.calculate_revenue_profit()
+
+    # Create a pie chart of costs from start date to end date
+    model.pie_chart_of_costs()
+
+    # Create a pie chart of costs to a certain date within the start and end date
+    model.pie_chart_total_budget(3000000)  #TODO
 
 
