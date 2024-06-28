@@ -2,7 +2,7 @@
 To run the script first install the requirements with `pip install -r requirements.txt` and then run the script with `python financialModel.py`.  
 
 ## Overview   
-![image.png](files/image.png)    
+![image.png](files/image.png)  
 |       Task |   Budget |
 |:-----------|:---------|
 | Operations | 1.25 mil |
