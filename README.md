@@ -1,15 +1,15 @@
-# Seed Financial Report   
+# Financial Forecasting   
 To run the script first install the requirements with `pip install -r requirements.txt` and then run the script with `python financialModel.py`.  
 
 ## Overview   
-![image.png](files/image_w.png)    
+![image.png](files/image.png)    
 |       Task |   Budget |
 |:-----------|:---------|
 | Operations | 1.25 mil |
-|   Research |    1 mil |
-|     Talent |  0.5 mil |
-|       Misc | 0.25 mil |
-|      Total |    3 mil |
+|   Research |  0.4 mil |
+|     Talent |  0.3 mil |
+|       Misc | 0.05 mil |
+|      Total |    2 mil |
 
 The total budget allocation is displayed above. Each of the sections below goes into further detail for the operations, research, and talent uses of budget.    
 ## Product Operations   
@@ -28,7 +28,7 @@ end_date = (2025, 6	, 1)
 user_aquisition_dates = [[(2024, 6, 18), 100], [(2024, 7, 12), 1000], [(2024, 8, 15), 1500], [(2024, 9, 15), 2000]]
 ```
 The values above will generate the following chart:   
-![image.png](files/image_n.png)    
+![](files)    
 ### Statistical Distributions   
 No user is the same and no use is the same and we want to account for that in our analysis. Therefore, we created statistical distributions for each quality that a user may have. The four qualities of a user in this model include:   
 1. Usage: How often a user uses the application   
@@ -37,17 +37,17 @@ No user is the same and no use is the same and we want to account for that in ou
 4. Searching: How many searches does a user make per use   
    
 The term per "use" is used for items (2), (3), and (4). Every user is given a usage score from item (1). This determines how likely the user will use the software for every day since the users creates their account. The usage score is from 0 to 1 and follows the distribution:   
-![image.png](files/image_g.png)    
+![](files/_s)    
 Which is skewed farther to low use than more use and has an average usage score of 0.1. The following three attributes of indexing, storage, and searching are considered to be independent of each other and all have their own distribution:   
-![image.png](files/image_v.png)    
+![](files/_6)    
 Average indexing length: 4min   
-![Screenshot from 2024-06-17 15-16-46.png](files/screenshot-from-2024-06-17-15-16-46.png)    
+![](files/_y)    
 Average storage size: 3Gb   
-![Screenshot from 2024-06-17 15-15-16.png](files/screenshot-from-2024-06-17-15-15-16.png)    
+![](files/_k)    
 Average number of searches: 15   
 ### Usage Over Time   
 We can use the distributions and logic presented above to create the following plot:   
-![image.png](files/image_y.png)    
+![](files/_f)    
 Where each of the three aspects, indexing, storage, and search are in the in the units of minutes, gigabytes, and count respectively.   
 ### Cost Over Time   
 The use over time chart can be supplemented by the cost of each action to make the cost over time chart. The cost for each action is:   
@@ -59,31 +59,29 @@ base_cost_per_day = 15.6
 
 ```
 Making the total cost come out to:   
-![image.png](files/image_4.png)    
+![](files/_i)    
 ## Research   
-The primary cost for research purposes are to train out own models. We have estimated the cost of training models over the number of epochs.   
-![image.png](files/image.png)    
+The primary cost for research purposes are to train out own models. We have estimated the cost of training models over the number of epochs. We have allocated a total of 400,000 dollars to training our future gen AI model.   
+![](files/_1)    
 ## Talent   
-We intend on hiring new talent for a total of 2 to 3 new hires for a total of a 4 to 5 person team. A break down of our intended team and salaries are below:   
+We intend on hiring new talent for a total of 2 to 3 new hires for a total of a 4 to 5 person team. A break down of our intended team and salaries are below. We can allocated a total of 300,000 dollars to talent.   
 |                                    Position |         Person |    Comp |
 |:--------------------------------------------|:---------------|:--------|
 |                                   Cofounder | Harsha Gundala |  75,000 |
 |                                   Cofounder | Ganesh Pimpale |  75,000 |
-|              Front End/Full Stack Developer |            TBD | 100,000 |
-|                                 AI/ML Infra |            TBD | 150,000 |
-| Misc (benefits, short-term employees, etc.) |            N/A | 100,000 |
-|                                       Total |                | 500,000 |
+|              Front End/Full Stack Developer |      Dany Boza |  75,000 |
+| Misc (benefits, short-term employees, etc.) |            N/A |  75,000 |
+|                                       Total |                | 300,000 |
 
 Which can be plotted over a one year runway:   
-![image.png](files/image_u.png)    
+![](files/_4)    
 ## Summary   
-The total costs from operations, research, and talent over time come is shown below along with the breakdown between operations, research and talent costs.   
-![image.png](files/image_c.png)    
-![image.png](files/image_9.png)    
-   
+The total costs from operations, research, and talent over time come out to be:   
+![](files/image_k.png)    
+![](files/image_w.png)    
 When running this model with while charging 6 cents per minute of footage, we can get an estimate for the revenue generated and the total losses incurred.    
-![image.png](files/image_p.png)    
-However, we expect the losses incurred over the course of a year with 10,000 users to be between 1.2 million to 800,000 dollars.   
+![](files/_c)    
+However, we expect the losses incurred over the course of a year with 10,000 users to be between 500,00 to 200,000 dollars.   
    
 The breakdown of all the entire budget for a one year runway is:   
-![image.png](files/image_d.png)    
+![](files/_3)    
