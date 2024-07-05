@@ -311,7 +311,7 @@ class Model:
 
         if show:
             plt.plot(self.days, self.ops_cost_by_day, label='Daily cost')
-            plt.plot(self.days, cost_over_time, label='Cost over time')
+            #plt.plot(self.days, cost_over_time, label='Cost over time')
             plt.legend(loc='best')
             plt.title('Operations cost: '+ str(int(total_cost)))
             plt.xlabel('Days')

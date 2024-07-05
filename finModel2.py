@@ -17,8 +17,6 @@ class Misc:
             new_data.append(data[count] + data[count+1])
         return new_data
 
-
-
 class User:
     def __init__(self):
         self.user_data_totals = np.empty((0, 7))
@@ -26,11 +24,26 @@ class User:
         self.user_id = 0
         self.user_ids = []
 
-        self.user_monthly_cost = 0
-        self.user_monthly_max_index_caption_min = 60
-        self.user_monthly_max_gen_sec = 10
-        self.user_monthly_max_gb_uploaded = 100
-        self.user_monthly_max_searches = np.inf
+        self.user_monthly_cost_free = 0
+        self.user_free_score_min = 0
+        self.user_monthly_max_index_caption_min_free = 60
+        self.user_monthly_max_gen_sec_free = 10
+        self.user_monthly_max_gb_uploaded_free = 64
+        self.user_monthly_max_searches_free = np.inf
+
+        self.user_monthly_cost_l1 = 20
+        self.user_l1_score_min = 0.5
+        self.user_monthly_max_index_caption_min_l1 = 600
+        self.user_monthly_max_gen_sec_l1 = 120
+        self.user_monthly_max_gb_uploaded_l1 = 256
+        self.user_monthly_max_searches_l1 = np.inf
+
+        self.user_monthly_cost_l2 = 40
+        
+        self.user_monthly_max_index_caption_min_l2 = 6000
+        self.user_monthly_max_gen_sec_l2 = 240
+        self.user_monthly_max_gb_uploaded_l2 = 512
+        self.user_monthly_max_searches_l2 = np.inf
 
     def get_new_user_id(self):
         user_id = self.user_id
@@ -65,7 +78,12 @@ class User:
         return user
 
     def sample_user(self, user_id):
-        pass
+        new_min_index_caption = Sample.user_indexing_captioning()
+        new_sec_gen = Sample.user_generation()
+        new_gb_uploaded = Sample.user_storage()
+        new_num_searches = Sample.user_search()
+        sub_state = self.user_data_totals[user_id, 2]
+
 
     def set_subscription(self, cost, idx_cap_min, gen_sec, store_gb, search_num):
         self.user_monthly_cost = cost
@@ -114,7 +132,7 @@ class Model:
         self.total_r_and_d_cost_over_time = []
         self.total_talent_cost_over_time = []
 
-    def set_model_variables(self):
+    def set_model_variables(self, day):
         pass
 
     def calculate_user_aquisition(self):
